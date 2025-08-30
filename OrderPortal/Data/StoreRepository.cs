@@ -221,15 +221,15 @@ namespace OrderPortal.Data
             }
         }
 
-        public bool SubmitCart(int cartId)
+        public bool SubmitCart(int cartId, string? customerPO = null, DateTime? dueDate = null)
         {
             try
             {
                 using (SqlConnection con = new SqlConnection(connectionString))
                 {
                     con.Open();
-                    string sql = "UPDATE Cart SET Submitted = 1 WHERE CartId = @CartId";
-                    con.Execute(sql, new { CartId = cartId });
+                    string sql = "UPDATE Cart SET Submitted = 1, CustomerPO = @CustomerPO, DueDate = @DueDate WHERE CartId = @CartId";
+                    con.Execute(sql, new { CartId = cartId, CustomerPO = customerPO, DueDate = dueDate });
                     return true;
                 }
             }

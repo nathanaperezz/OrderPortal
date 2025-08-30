@@ -155,7 +155,7 @@ namespace OrderPortal.Controllers
         }
 
         [HttpPost]
-        public IActionResult SubmitCart()
+        public IActionResult SubmitCart(string? customerPO = null, string? dueDate = null)
         {
             // Get user info from session
             var loginPK = HttpContext.Session.GetInt32("LoginPK");
@@ -171,7 +171,14 @@ namespace OrderPortal.Controllers
                 return Json(new { success = false, message = "No active cart found" });
             }
 
-            bool success = _repository.SubmitCart(cart.CartId);
+            // Parse due date if provided
+            DateTime? parsedDueDate = null;
+            if (!string.IsNullOrEmpty(dueDate) && DateTime.TryParse(dueDate, out DateTime tempDate))
+            {
+                parsedDueDate = tempDate;
+            }
+
+            bool success = _repository.SubmitCart(cart.CartId, customerPO, parsedDueDate);
             return Json(new { success = success, message = success ? "Order submitted successfully" : "Failed to submit order" });
         }
 
