@@ -1,0 +1,48 @@
+@model List<OrderPortal.Models.Product>
+
+@{
+    ViewData["Title"] = "Products";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h2>All Products</h2>
+        
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                No products found in this category.
+            </div>
+        }
+        else
+        {
+            <div class="row row-cols-1 row-cols-md-4 g-4">
+                @foreach (var product in Model)
+                {
+                    <div class="col">
+                        <div class="card h-100 product-card" style="cursor: pointer;" onclick="window.location.href='@Url.Action("Product", "Store", new { id = product.ProductId })'">
+                            @if (!string.IsNullOrEmpty(product.Image))
+                            {
+                                <img src="@product.Image" class="card-img-top" alt="@product.Description" style="height: 200px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                </div>
+                            }
+                            <div class="card-body">
+                                <h5 class="card-title">@product.Description</h5>
+                                <p class="card-text">
+                                    <strong>Price:</strong> $@product.Price.ToString("F2")
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+

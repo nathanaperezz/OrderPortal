@@ -1,0 +1,126 @@
+@model List<OrderPortal.Models.CartItemView>
+
+@{
+    ViewData["Title"] = "Shopping Cart";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h2>Shopping Cart</h2>
+        
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                <h4 class="alert-heading">Your cart is empty!</h4>
+                <p>Start shopping by browsing our <a href="@Url.Action("Index", "Store")" class="alert-link">products</a>.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>SKU</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Extended Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="@Url.Action("Product", "Store", new { id = item.ProductId })" class="text-decoration-none">
+                                        <strong>@item.Description</strong>
+                                    </a>
+                                    @if (item.Pallets.HasValue && item.Pallets > 0)
+                                    {
+                                        <br><small class="text-muted">@item.Pallets.Value.ToString("F2") pallets</small>
+                                    }
+                                </td>
+                                <td>@item.SKU</td>
+                                <td>$@item.Price.ToString("F2")</td>
+                                <td>
+                                    <span class="badge bg-secondary fs-6">@item.Qty</span>
+                                </td>
+                                <td>$@item.ExtendedAmount.ToString("F2")</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="removeItem(@item.ProductId)">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Order Summary</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Any())
+                {
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>$@Model.Sum(i => i.ExtendedAmount).ToString("F2")</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong>$@Model.Sum(i => i.ExtendedAmount).ToString("F2")</strong>
+                    </div>
+                    
+                    <button class="btn btn-success w-100" onclick="submitOrder()">
+                        <i class="bi bi-check-circle"></i> Submit Order
+                    </button>
+                }
+                else
+                {
+                    <p class="text-muted">No items in cart</p>
+                }
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Continue Shopping</h5>
+            </div>
+            <div class="card-body">
+                <a href="@Url.Action("Index", "Store")" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-arrow-left"></i> Back to Products
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function removeItem(productId) {
+            $.post('/Store/RemoveFromCart', { productId: productId }, function(data) {
+                if (data.success) {
+                    // Reload the page
+                    location.reload();
+                }
+            });
+        }
+        
+        function submitOrder() {
+            $.post('/Store/SubmitCart', function(data) {
+                if (data.success) {
+                    // Redirect to products page
+                    window.location.href = '@Url.Action("Index", "Store")';
+                }
+            });
+        }
+    </script>
+}

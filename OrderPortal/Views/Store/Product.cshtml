@@ -1,0 +1,105 @@
+@model OrderPortal.Models.Product
+
+@{
+    ViewData["Title"] = Model.Description;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            @if (!string.IsNullOrEmpty(Model.Image))
+            {
+                <img src="@Model.Image" class="img-fluid rounded" alt="@Model.Description" style="max-height: 500px; object-fit: cover;">
+            }
+            else
+            {
+                <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 500px;">
+                    <i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
+                </div>
+            }
+        </div>
+        <div class="col-md-6">
+            <h1 class="mb-3">@Model.Description</h1>
+            <div class="mb-4">
+                <h3 class="text-primary">$@Model.Price.ToString("F2")</h3>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Product Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <p><strong>SKU:</strong> @Model.SKU</p>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Category))
+                        {
+                            <div class="col-sm-6">
+                                <p><strong>Category:</strong> @Model.Category</p>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.UoM))
+                        {
+                            <div class="col-sm-6">
+                                <p><strong>Unit:</strong> @Model.UoM</p>
+                            </div>
+                        }
+                        @if (Model.EachesToPallet.HasValue)
+                        {
+                            <div class="col-sm-6">
+                                <p><strong>Eaches per Pallet:</strong> @Model.EachesToPallet</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Add to Cart</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <label for="quantity" class="form-label">Quantity:</label>
+                            <input type="number" class="form-control" id="quantity" value="@ViewBag.CurrentQuantity" min="1">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-primary w-100" onclick="updateCart(@Model.ProductId)">
+                                <i class="bi bi-cart-plus"></i> Update Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <a href="@Url.Action("Index", "Store")" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Products
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateCart(productId) {
+            var qty = parseInt($('#quantity').val());
+            if (qty < 1) {
+                return;
+            }
+            
+            $.post('/Store/UpdateCart', { productId: productId, qty: qty }, function(data) {
+                if (data.success) {
+                    // Update cart count
+                    $.get('/Store/GetCartCount', function(cartData) {
+                        $('#cartCount').text(cartData.count);
+                    });
+                }
+            });
+        }
+    </script>
+}
