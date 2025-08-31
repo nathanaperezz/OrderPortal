@@ -24,8 +24,7 @@ namespace OrderPortal.Controllers
         {
             if (ModelState.IsValid)
             {
-                // For demo purposes, we'll accept any email and ignore password
-                // In a real app, you'd validate against the database
+                // Any username and password are accepted for now
                 var login = _repository.GetLoginByEmail(model.Email);
                 
                 // Store login info in session
