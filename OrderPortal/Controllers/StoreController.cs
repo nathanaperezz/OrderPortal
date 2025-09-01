@@ -204,5 +204,62 @@ namespace OrderPortal.Controllers
 
             return Json(new { count = totalItems });
         }
+
+        [HttpGet]
+        public IActionResult GetShippingAddresses()
+        {
+            var loginPK = HttpContext.Session.GetInt32("LoginPK");
+            if (!loginPK.HasValue)
+            {
+                return Json(new { success = false, message = "Please log in" });
+            }
+
+            var login = _repository.GetLoginByEmail(HttpContext.Session.GetString("UserEmail") ?? "");
+            if (login == null)
+            {
+                return Json(new { success = false, message = "User not found" });
+            }
+
+            var addresses = _repository.GetCustomerShippingAddresses(login.CustomerId);
+            return Json(new { success = true, addresses = addresses });
+        }
+
+        [HttpPost]
+        public IActionResult SaveShippingAddress([FromBody] CustomerShipTo address)
+        {
+            var loginPK = HttpContext.Session.GetInt32("LoginPK");
+            if (!loginPK.HasValue)
+            {
+                return Json(new { success = false, message = "Please log in" });
+            }
+
+            var login = _repository.GetLoginByEmail(HttpContext.Session.GetString("UserEmail") ?? "");
+            if (login == null)
+            {
+                return Json(new { success = false, message = "User not found" });
+            }
+
+            address.CustomerId = login.CustomerId;
+
+            // Create new address
+            int addressId = _repository.CreateShippingAddress(address);
+            if (addressId > 0)
+            {
+                address.CustomerShipToPK = addressId;
+                return Json(new { success = true, message = "Address saved successfully", address = address });
+            }
+            else
+            {
+                return Json(new { success = false, message = "Failed to save address" });
+            }
+        }
+
+
+
+        [HttpGet]
+        public IActionResult OrderConfirmation()
+        {
+            return View();
+        }
     }
 }

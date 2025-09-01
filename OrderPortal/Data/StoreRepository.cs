@@ -30,23 +30,6 @@ namespace OrderPortal.Data
             }
         }
 
-        public List<Product> GetProductsByCategory(string category)
-        {
-            try
-            {
-                using (SqlConnection con = new SqlConnection(connectionString))
-                {
-                    con.Open();
-                    string sql = "SELECT * FROM Products WHERE Category = @Category ORDER BY Description";
-                    return con.Query<Product>(sql, new { Category = category }).ToList();
-                }
-            }
-            catch (Exception)
-            {
-                return new List<Product>();
-            }
-        }
-
         public Product? GetProductById(int productId)
         {
             try
@@ -275,20 +258,56 @@ namespace OrderPortal.Data
             }
         }
 
-        public List<string> GetCategories()
+        public List<CustomerShipTo> GetCustomerShippingAddresses(int customerId)
         {
             try
             {
                 using (SqlConnection con = new SqlConnection(connectionString))
                 {
                     con.Open();
-                    string sql = "SELECT DISTINCT Category FROM Products WHERE Category IS NOT NULL ORDER BY Category";
-                    return con.Query<string>(sql).ToList();
+                    string sql = "SELECT * FROM CustomerShipTo WHERE CustomerId = @CustomerId ORDER BY ShipToAddressId";
+                    return con.Query<CustomerShipTo>(sql, new { CustomerId = customerId }).ToList();
                 }
             }
             catch (Exception)
             {
-                return new List<string>();
+                return new List<CustomerShipTo>();
+            }
+        }
+
+        public CustomerShipTo? GetShippingAddressById(int addressId)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connectionString))
+                {
+                    con.Open();
+                    string sql = "SELECT * FROM CustomerShipTo WHERE CustomerShipToPK = @AddressId";
+                    return con.QueryFirstOrDefault<CustomerShipTo>(sql, new { AddressId = addressId });
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public int CreateShippingAddress(CustomerShipTo address)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connectionString))
+                {
+                    con.Open();
+                    string sql = @"INSERT INTO CustomerShipTo (CustomerId, ShipToAddressId, Address1, Address2, City, State, Zip, Phone) 
+                                  VALUES (@CustomerId, @ShipToAddressId, @Address1, @Address2, @City, @State, @Zip, @Phone);
+                                  SELECT CAST(SCOPE_IDENTITY() as int)";
+                    return con.QuerySingle<int>(sql, address);
+                }
+            }
+            catch (Exception)
+            {
+                return 0;
             }
         }
     }

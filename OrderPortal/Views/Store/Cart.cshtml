@@ -85,11 +85,13 @@
                 <h5 class="mb-0">Shipping Information</h5>
             </div>
             <div class="card-body">
-                <p id="shipToAddress">Ship To Address</p>
-                <p id="myContact">My Contact</p>
-                <p id="address1">Address 1</p>
-                <p id="address2">Address 2</p>
-                <p id="cityStateZip">City, State Zip</p>
+                <div id="currentShippingInfo">
+                    <p id="shipToAddress">Ship To Address</p>
+                    <p id="address1">Address 1</p>
+                    <p id="address2">Address 2</p>
+                    <p id="cityStateZip">City, State Zip</p>
+                    <p id="phone">Phone</p>
+                </div>
 
                 <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#shippingModal">
                     Update Shipping
@@ -99,39 +101,68 @@
 
         <!-- Bootstrap Modal -->
         <div class="modal fade" id="shippingModal" tabindex="-1" aria-labelledby="shippingModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="shippingModalLabel">Update Shipping</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form id="shippingForm">
+                        <!-- Saved Addresses Section -->
+                        <div class="mb-4">
+                            <h6>Saved Addresses</h6>
+                            <div id="savedAddressesList" class="mb-3">
+                                <!-- Saved addresses will be loaded here -->
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="addNewAddressBtn">
+                                <i class="bi bi-plus"></i> Add New Address
+                            </button>
+                        </div>
+
+                        <!-- Address Form -->
+                        <form id="shippingForm" style="display: none;">
+                            <input type="hidden" id="addressId" value="0">
                             <div class="mb-3">
                                 <label for="newShipToAddress" class="form-label">Ship To Address</label>
-                                <input type="text" class="form-control" id="newShipToAddress">
-                            </div>
-                            <div class="mb-3">
-                                <label for="newMyContact" class="form-label">My Contact</label>
-                                <input type="text" class="form-control" id="newMyContact">
+                                <input type="text" class="form-control" id="newShipToAddress" placeholder="Enter ship to name">
                             </div>
                             <div class="mb-3">
                                 <label for="newAddress1" class="form-label">Address 1</label>
-                                <input type="text" class="form-control" id="newAddress1">
+                                <input type="text" class="form-control" id="newAddress1" placeholder="Enter street address">
                             </div>
                             <div class="mb-3">
                                 <label for="newAddress2" class="form-label">Address 2</label>
-                                <input type="text" class="form-control" id="newAddress2">
+                                <input type="text" class="form-control" id="newAddress2" placeholder="Enter suite, apt, etc. (optional)">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="newCity" class="form-label">City</label>
+                                        <input type="text" class="form-control" id="newCity" placeholder="Enter city">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="newState" class="form-label">State</label>
+                                        <input type="text" class="form-control" id="newState" placeholder="Enter state">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="newZip" class="form-label">Zip Code</label>
+                                        <input type="text" class="form-control" id="newZip" placeholder="Enter zip code">
+                                    </div>
+                                </div>
                             </div>
                             <div class="mb-3">
-                                <label for="newCityStateZip" class="form-label">City, State Zip</label>
-                                <input type="text" class="form-control" id="newCityStateZip">
+                                <label for="newPhone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="newPhone" placeholder="Enter phone number">
                             </div>
                         </form>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" id="saveShipping">Save</button>
+                        <button type="button" class="btn btn-primary" id="saveShipping" style="display: none;">Save Address</button>
                     </div>
                 </div>
             </div>
@@ -170,6 +201,158 @@
 
 @section Scripts {
     <script>
+        let currentAddresses = [];
+        let selectedAddressId = 0;
+
+        $(document).ready(function() {
+            loadShippingAddresses();
+            
+            // Add New Address button
+            $('#addNewAddressBtn').click(function() {
+                showAddressForm();
+                clearAddressForm();
+            });
+
+            // Save Address button
+            $('#saveShipping').click(function() {
+                saveShippingAddress();
+            });
+
+            // Modal hidden event
+            $('#shippingModal').on('hidden.bs.modal', function() {
+                hideAddressForm();
+                clearAddressForm();
+            });
+        });
+
+        function loadShippingAddresses() {
+            $.get('/Store/GetShippingAddresses', function(data) {
+                if (data.success) {
+                    currentAddresses = data.addresses;
+                    displaySavedAddresses();
+                    if (currentAddresses.length > 0) {
+                        // Set the first address as current
+                        setCurrentAddress(currentAddresses[0]);
+                    }
+                }
+            });
+        }
+
+        function displaySavedAddresses() {
+            const container = $('#savedAddressesList');
+            container.empty();
+
+            if (currentAddresses.length === 0) {
+                container.html('<p class="text-muted">No saved addresses found.</p>');
+                return;
+            }
+
+            currentAddresses.forEach(function(address) {
+                const addressCard = $(`
+                    <div class="card mb-2 address-card" data-address-id="${address.customerShipToPK}">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">${address.shipToAddressId || 'Address'}</h6>
+                                    <p class="mb-1 small">${address.address1 || ''}</p>
+                                    ${address.address2 ? `<p class="mb-1 small">${address.address2}</p>` : ''}
+                                    <p class="mb-0 small">${address.city || ''}, ${address.state || ''} ${address.zip || ''}</p>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                `);
+
+                addressCard.click(function() {
+                    const addressId = $(this).data('address-id');
+                    selectAddress(addressId);
+                });
+
+                container.append(addressCard);
+            });
+        }
+
+        function selectAddress(addressId) {
+            selectedAddressId = addressId;
+            const address = currentAddresses.find(a => a.customerShipToPK === addressId);
+            if (address) {
+                setCurrentAddress(address);
+                $('#shippingModal').modal('hide');
+            }
+        }
+
+        function setCurrentAddress(address) {
+            $('#shipToAddress').text(address.shipToAddressId || 'Ship To Address');
+            $('#address1').text(address.address1 || 'Address 1');
+            $('#address2').text(address.address2 || 'Address 2');
+            $('#cityStateZip').text(`${address.city || ''}, ${address.state || ''} ${address.zip || ''}`);
+            $('#phone').text(address.phone || 'Phone');
+        }
+
+
+
+        function showAddressForm() {
+            $('#shippingForm').show();
+            $('#saveShipping').show();
+            $('#addNewAddressBtn').hide();
+        }
+
+        function hideAddressForm() {
+            $('#shippingForm').hide();
+            $('#saveShipping').hide();
+            $('#addNewAddressBtn').show();
+        }
+
+        function clearAddressForm() {
+            $('#addressId').val(0);
+            $('#newShipToAddress').val('');
+            $('#newAddress1').val('');
+            $('#newAddress2').val('');
+            $('#newCity').val('');
+            $('#newState').val('');
+            $('#newZip').val('');
+            $('#newPhone').val('');
+        }
+
+        function saveShippingAddress() {
+            const addressData = {
+                customerShipToPK: parseInt($('#addressId').val()) || 0,
+                shipToAddressId: $('#newShipToAddress').val(),
+                address1: $('#newAddress1').val(),
+                address2: $('#newAddress2').val(),
+                city: $('#newCity').val(),
+                state: $('#newState').val(),
+                zip: $('#newZip').val(),
+                phone: $('#newPhone').val()
+            };
+
+            // Basic validation
+            if (!addressData.shipToAddressId || !addressData.address1 || !addressData.city || !addressData.state || !addressData.zip) {
+                alert('Please fill in all required fields (Ship To Address, Address 1, City, State, and Zip Code).');
+                return;
+            }
+
+            $.ajax({
+                url: '/Store/SaveShippingAddress',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(addressData),
+                success: function(data) {
+                    if (data.success) {
+                        loadShippingAddresses();
+                        hideAddressForm();
+                        clearAddressForm();
+                    } else {
+                        alert('Failed to save address: ' + data.message);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while saving the address.');
+                }
+            });
+        }
+
         function removeItem(productId) {
             $.post('/Store/RemoveFromCart', { productId: productId }, function(data) {
                 if (data.success) {
@@ -188,8 +371,8 @@
                 dueDate: dueDate 
             }, function(data) {
                 if (data.success) {
-                    // Redirect to products page
-                    window.location.href = '@Url.Action("Index", "Store")';
+                    // Redirect to order confirmation page
+                    window.location.href = '@Url.Action("OrderConfirmation", "Store")';
                 }
             });
         }

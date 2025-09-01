@@ -1,0 +1,35 @@
+
+@{
+    ViewData["Title"] = "Order Confirmation";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h1 class="display-6 text-success mb-4">Thank you for shopping with us!</h1>
+                    
+                    <div class="mb-5">
+                        <p class="lead text-muted mb-3">
+                            We received your order and will process it right away.
+                        </p>
+                        <p class="lead text-muted mb-0">
+                            You will receive an email with this confirmation in a few minutes.
+                        </p>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-block mt-4">
+                        <a href="@Url.Action("Index", "Store")" class="btn btn-primary btn-lg px-4">
+                            Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
