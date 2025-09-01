@@ -50,14 +50,10 @@
                                 </td>
                                 <td>@item.SKU</td>
                                 <td>$@item.Price.ToString("F2")</td>
-                                <td>
-                                    <span class="badge bg-secondary fs-6">@item.Qty</span>
-                                </td>
+                                <td>@item.Qty</td>
                                 <td>$@item.ExtendedAmount.ToString("F2")</td>
                                 <td>
-                                    <button class="btn btn-sm btn-danger" onclick="removeItem(@item.ProductId)">
-                                        <i class="bi bi-trash"></i> Remove
-                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="removeItem(@item.ProductId)">Remove</button>
                                 </td>
                             </tr>
                         }
@@ -83,6 +79,64 @@
                 </div>
             </div>
         </div>
+
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Shipping Information</h5>
+            </div>
+            <div class="card-body">
+                <p id="shipToAddress">Ship To Address</p>
+                <p id="myContact">My Contact</p>
+                <p id="address1">Address 1</p>
+                <p id="address2">Address 2</p>
+                <p id="cityStateZip">City, State Zip</p>
+
+                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#shippingModal">
+                    Update Shipping
+                </button>
+            </div>
+        </div>
+
+        <!-- Bootstrap Modal -->
+        <div class="modal fade" id="shippingModal" tabindex="-1" aria-labelledby="shippingModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="shippingModalLabel">Update Shipping</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="shippingForm">
+                            <div class="mb-3">
+                                <label for="newShipToAddress" class="form-label">Ship To Address</label>
+                                <input type="text" class="form-control" id="newShipToAddress">
+                            </div>
+                            <div class="mb-3">
+                                <label for="newMyContact" class="form-label">My Contact</label>
+                                <input type="text" class="form-control" id="newMyContact">
+                            </div>
+                            <div class="mb-3">
+                                <label for="newAddress1" class="form-label">Address 1</label>
+                                <input type="text" class="form-control" id="newAddress1">
+                            </div>
+                            <div class="mb-3">
+                                <label for="newAddress2" class="form-label">Address 2</label>
+                                <input type="text" class="form-control" id="newAddress2">
+                            </div>
+                            <div class="mb-3">
+                                <label for="newCityStateZip" class="form-label">City, State Zip</label>
+                                <input type="text" class="form-control" id="newCityStateZip">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="saveShipping">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         
         <div class="card">
             <div class="card-header">
@@ -102,7 +156,7 @@
                     </div>
                     
                     <button class="btn btn-success w-100" onclick="submitOrder()">
-                        <i class="bi bi-check-circle"></i> Submit Order
+                        Submit Order
                     </button>
                 }
                 else
