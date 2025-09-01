@@ -232,20 +232,24 @@ namespace OrderPortal.Data
                     string sql = "SELECT * FROM Login WHERE Email = @Email";
                     var login = con.QueryFirstOrDefault<Login>(sql, new { Email = email });
                     
-                    // For demo purposes, if login doesn't exist, create it
+                    // For demo purposes, if login doesn't exist, create it with a unique customer ID
                     if (login == null)
                     {
+                        // Get the next available customer ID
+                        string maxCustomerIdSql = "SELECT ISNULL(MAX(CustomerId), 0) + 1 FROM Login";
+                        int newCustomerId = con.QuerySingle<int>(maxCustomerIdSql);
+                        
                         string insertSql = @"INSERT INTO Login (Email, Password, CustomerId) 
-                                            VALUES (@Email, NULL, 1);
+                                            VALUES (@Email, NULL, @CustomerId);
                                             SELECT CAST(SCOPE_IDENTITY() as int)";
-                        int loginId = con.QuerySingle<int>(insertSql, new { Email = email });
+                        int loginId = con.QuerySingle<int>(insertSql, new { Email = email, CustomerId = newCustomerId });
                         
                         login = new Login
                         {
                             LoginPK = loginId,
                             Email = email,
                             Password = null,
-                            CustomerId = 1
+                            CustomerId = newCustomerId
                         };
                     }
                     

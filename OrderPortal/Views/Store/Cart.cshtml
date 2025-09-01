@@ -10,6 +10,8 @@
     </a>
 </div>
 
+
+
 <div class="row">
     <div class="col-md-8">
         <h2>Shopping Cart</h2>
@@ -43,10 +45,6 @@
                                     <a href="@Url.Action("Product", "Store", new { id = item.ProductId })" class="text-decoration-none">
                                         <strong>@item.Description</strong>
                                     </a>
-                                    @if (item.Pallets.HasValue && item.Pallets > 0)
-                                    {
-                                        <br><small class="text-muted">@item.Pallets.Value.ToString("F2") pallets</small>
-                                    }
                                 </td>
                                 <td>@item.SKU</td>
                                 <td>$@item.Price.ToString("F2")</td>
