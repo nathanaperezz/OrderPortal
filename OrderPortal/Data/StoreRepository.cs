@@ -1,6 +1,7 @@
 using Dapper;
 using OrderPortal.Models;
 using System.Data.SqlClient;
+using System.Runtime.CompilerServices;
 
 namespace OrderPortal.Data
 {
@@ -47,6 +48,7 @@ namespace OrderPortal.Data
             }
         }
 
+        //This is the view. Go over with Jeffrey 
         public List<CartItemView> GetCartItems(int cartId)
         {
             try

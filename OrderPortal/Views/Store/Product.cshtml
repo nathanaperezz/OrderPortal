@@ -68,7 +68,7 @@
                     <div class="row">
                         <div class="col-6">
                             <label for="quantity" class="form-label">Quantity:</label>
-                            <input type="number" class="form-control" id="quantity" value="@ViewBag.CurrentQuantity" min="1">
+                            <input type="number" class="form-control" id="quantity" value="@ViewBag.CurrentQuantity" min="0">
                         </div>
                         <div class="col-6">
                             <label class="form-label">&nbsp;</label>
@@ -87,8 +87,8 @@
     <script>
         function updateCart(productId) {
             var qty = parseInt($('#quantity').val());
-            if (qty < 1) {
-                return;
+            if (isNaN(qty) || qty < 0) {
+                qty = 0;
             }
             
             $.post('/Store/UpdateCart', { productId: productId, qty: qty }, function(data) {

@@ -30,7 +30,7 @@ namespace OrderPortal.Controllers
 
             // Check if user is logged in and has this product in cart
             var loginPK = HttpContext.Session.GetInt32("LoginPK");
-            int currentQuantity = 1; // Default quantity
+            int currentQuantity = 0; // Default quantity should be 0 if not in cart
             
             if (loginPK.HasValue)
             {
@@ -93,6 +93,12 @@ namespace OrderPortal.Controllers
             var cart = _repository.GetCartByLogin(loginPK.Value);
             if (cart == null)
             {
+                // If qty is 0 and there is no cart, nothing to remove; no-op success
+                if (qty == 0)
+                {
+                    return Json(new { success = true, message = "No changes" });
+                }
+
                 // Create new cart
                 int cartId = _repository.CreateCart(customerId.Value, loginPK.Value);
                 if (cartId == 0)
@@ -100,6 +106,13 @@ namespace OrderPortal.Controllers
                     return Json(new { success = false, message = "Failed to create cart" });
                 }
                 cart = new Cart { CartId = cartId };
+            }
+
+            // If qty is 0, remove the item (if present) instead of storing zero-qty rows
+            if (qty == 0)
+            {
+                bool removed = _repository.RemoveFromCart(cart.CartId, productId);
+                return Json(new { success = removed, message = removed ? "Removed from cart" : "Nothing to remove" });
             }
 
             bool success = _repository.UpdateCartItem(cart.CartId, productId, qty);
